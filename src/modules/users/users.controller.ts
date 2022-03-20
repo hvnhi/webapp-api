@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { CreateUserDto } from './dto/create.user.dto';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FindUserDto } from './dto/find-user.dto';
 import { UsersService } from './users.service';
 
@@ -7,11 +7,7 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto): Promise<any> {
-    return this.usersService.createUser(createUserDto);
-  }
-
+  @UseGuards(JwtAuthGuard)
   @Get()
   async list(@Query() params: FindUserDto): Promise<any> {
     const [items, total] = await this.usersService.list(params);
