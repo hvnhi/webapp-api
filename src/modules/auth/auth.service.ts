@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { User } from 'src/common/entities/user.entity';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -10,21 +11,23 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(username: string, pass: string): Promise<any> {
+  async validateUser(username: string, password: string): Promise<any> {
     const user = await this.usersService.getOne({ username });
     if (!user) {
       throw new BadRequestException('User does not exist');
     }
-    const isValid = await bcrypt.compareSync(pass, user.password);
+    const isValid = await bcrypt.compareSync(password, user.password);
     if (isValid) {
-      return user;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...result } = user;
+      return result;
     } else {
       throw new BadRequestException('Invalid password');
     }
   }
 
-  async login(user: any) {
-    const payload = { username: user.username, sub: user.userId };
+  async login(user: User) {
+    const payload = { username: user.username, id: user.id };
     return {
       token: this.jwtService.sign(payload),
     };
